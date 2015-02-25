@@ -14,12 +14,10 @@ import java.util.Objects;
  * @author Robert
  * @date 12-Feb-15.
  */
-public class WebClient {
-    public WebClient(String ip, int port, int receive_size, int send_size) {
+public class WebClient extends HTTPConnection {
+    public WebClient(String ip) {
         try {
-            m_Client = new UDPClient(InetAddress.getByName(ip), port);
-            m_Client.setReceivePacketSize(receive_size);
-            m_Client.setSendPacketSize(send_size);
+            UDP_Connection = new UDPClient(InetAddress.getByName(ip));
         } catch (UDPException | UnknownHostException e) {
             e.printStackTrace();
         }
@@ -28,43 +26,43 @@ public class WebClient {
     public void request(String command, String file) throws UDPException, IOException {
         if (Objects.equals(command.toLowerCase(), "get")) {
             String request = "GET " + file + " HTTP/1.0";
-            m_Client.send(request.getBytes());
-            byte[] header = m_Client.receive();
+            UDP_Connection.send(request.getBytes());
+            byte[] header = UDP_Connection.receive();
             headerInfo(header);
-            m_Data = new byte[m_File_Size];
+            Data = new byte[File_Size];
             constructFile();
         }
     }
 
     public void printFile() {
-        String s = new String(m_Data);
+        String s = new String(Data);
         System.out.println(s);
     }
 
     private void constructFile() throws UDPException, IOException {
-        byte[] packet = m_Client.receive();
+        byte[] packet = UDP_Connection.receive();
         do {
-            int order = byteArrayPlacement(Arrays.copyOfRange(packet, 1, 5));
+            int order = orderOfPacketInMessage(Arrays.copyOfRange(packet, 1, 5));
             byte parity = packet[0];
             if (parity != 'A') {
                 System.out.println("Corrupted!");
             }
 
             byte[] data = Arrays.copyOfRange(packet, 6, packet.length);
-            if (data.length > m_Data.length) {
-                System.arraycopy(data, 0, m_Data, order * data.length, m_Data.length);
+            if (data.length > Data.length) {
+                System.arraycopy(data, 0, Data, order * data.length, Data.length);
             } else {
-                System.arraycopy(data, 0, m_Data, order * data.length, data.length);
+                System.arraycopy(data, 0, Data, order * data.length, data.length);
             }
-            packet = m_Client.receive();
+            packet = UDP_Connection.receive();
         } while (packet[7] != '\0');
 
-        FileOutputStream html = new FileOutputStream(m_File_Name);
-        html.write(m_Data);
+        FileOutputStream html = new FileOutputStream(File_Name);
+        html.write(Data);
         html.close();
     }
 
-    private int byteArrayPlacement(byte[] array) {
+    private int orderOfPacketInMessage(byte[] array) {
         return (array[0] << 24)| ((array[1] << 24) >> 8) | ((array[2] << 24) >> 16) | ((array[3] << 24) >> 24);
     }
 
@@ -72,11 +70,11 @@ public class WebClient {
         String info = new String(header).replaceAll("\0", "");
         info = info.substring(56, info.length());
         String size = info.substring(info.indexOf(' ') + 1, info.indexOf('\r'));
-        m_File_Size = Integer.parseInt(size);
-        m_File_Name = info.substring(info.lastIndexOf('\n'), info.length()).replaceAll("\n", "");
+        File_Size = Integer.parseInt(size);
+        File_Name = info.substring(info.lastIndexOf('\n'), info.length()).replaceAll("\n", "");
     }
-    private String m_File_Name;
-    private byte[] m_Data;
-    private int m_File_Size;
-    private UDPClient m_Client;
+
+    private String File_Name;
+    private byte[] Data;
+    private int File_Size;
 }

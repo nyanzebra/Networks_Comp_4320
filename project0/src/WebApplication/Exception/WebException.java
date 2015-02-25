@@ -1,4 +1,4 @@
-package UDPConnection.Exception;
+package WebApplication.Exception;
 
 /**
  * @author Robert
