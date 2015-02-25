@@ -8,7 +8,16 @@ import java.io.IOException;
  */
 public class Client_Web {
     public static void main(String[] args) {
-        WebClient wc = new WebClient("localhost", 9876, 256, 256);
+        WebClient wc = new WebClient("localhost");
+
+        try {
+            wc.setPort(9876);
+            wc.setSendSize(256);
+            wc.setReceiveSize(256);
+        } catch (UDPException e) {
+            e.printStackTrace();
+        }
+
         try {
             wc.request("Get", "html0.html");
         } catch (UDPException | IOException e) {

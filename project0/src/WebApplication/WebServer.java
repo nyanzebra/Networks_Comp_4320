@@ -1,23 +1,22 @@
 package WebApplication;
 
 import UDPConnection.Exception.UDPException;
-import UDPConnection.Exception.WebException;
 import UDPConnection.UDPServer;
+import WebApplication.Exception.WebException;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Arrays;
 /**
  * @author Robert
  * @date 12-Feb-15.
  */
-public class WebServer {
-    public WebServer(int port, int receive_size, int send_size) {
+public class WebServer extends HTTPConnection {
+    public WebServer(int port) {
         try {
-            m_Server = new UDPServer(port);
-            m_Server.setReceivePacketSize(receive_size);
-            m_Server.setSendPacketSize(send_size);
+            UDP_Connection = new UDPServer(port);
         } catch (UDPException e) {
             e.printStackTrace();
         }
@@ -25,48 +24,73 @@ public class WebServer {
 
     public void listen() throws UDPException, IOException, WebException {
         while (true) {
-            m_Message = m_Server.receive();
+            Message = UDP_Connection.receive();
             if (isRequest()) {
                 respond();
             }
         }
     }
 
-    public void setRootDirectory(String directory) {
-        m_Root_Directory = directory;
-    }
-    //400 = badrequest
     private void respond() throws IOException, UDPException, WebException {
-        String file_location = new String(m_Message);
-        file_location = file_location.substring(file_location.indexOf(' ') + 1, file_location.lastIndexOf(' '));
-        FileInputStream html = new FileInputStream(m_Root_Directory + file_location);
-        File file = new File(m_Root_Directory + file_location);
-        m_Server.send(objectHeader(file.getName(), (int) file.length()).getBytes());
-        byte[] message = new byte[(int) file.length()];
-        html.read(message);
+        String file_location = findFileLocation();
+        sendHTTPObjectHeader(file_location);
+
+        byte[] message = new byte[(int) fileToSend(file_location).length()];
+
+        fileInputStream(file_location).read(message);
         /*if (message.length < 1024 * 10) {
             //exception
             throw new WebException("WebException:   file must be greater than 10kb in size");
         }*/
+        sendPackets(message);
 
-        for (int i = 0; i < message.length - 1; i += 256) {
-            byte[] packet_message = Arrays.copyOfRange(message, i, i + 250);
-            m_Server.send(packetMessage(packet_message, i / 256));
-        }
-        byte[] footer = new byte[7];
-        System.arraycopy(packetHeader(0), 0, footer, 0, 6);
-        m_Server.send(footer);
+        UDP_Connection.send(constructPacketFooter());
     }
 
-    private byte[] packetMessage(byte[] message, int order) {
-        byte[] header = packetHeader(order);
+    private File fileToSend(String file_location) {
+        return new File(Root_Directory + file_location);
+    }
+
+    private FileInputStream fileInputStream(String file_location) throws FileNotFoundException {
+        return new FileInputStream(Root_Directory + file_location);
+    }
+
+    private void sendHTTPObjectHeader(String file_location) throws UDPException {
+        int file_length = (int) fileToSend(file_location).length();
+        String file_name = fileToSend(file_location).getName();
+        String http_object_header = constructHTTPObjectHeader(file_name, file_length);
+        UDP_Connection.send(http_object_header.getBytes());
+    }
+
+    private String findFileLocation() {
+        String file_location = new String(Message);
+        return file_location.substring(file_location.indexOf(' ') + 1, file_location.lastIndexOf(' '));
+    }
+
+    private byte[] constructPacketFooter() {
+        byte[] footer = new byte[7];
+        System.arraycopy(constructPacketHeader(0), 0, footer, 0, 6); // this is to meet requirement of null terminated message
+        return footer;
+    }
+
+    private void sendPackets(byte[] message) throws UDPException {
+        int send_size = UDP_Connection.getSendPacketSize();
+        int data_size = send_size - Header_Size;
+        for (int i = 0; i < message.length - 1; i += send_size) {
+            byte[] packet_message = Arrays.copyOfRange(message, i, i + data_size);
+            UDP_Connection.send(constructPacketMessage(packet_message, i / send_size));
+        }
+    }
+
+    private byte[] constructPacketMessage(byte[] message, int order) {
+        byte[] header = constructPacketHeader(order);
         byte[] packet_message = new byte[message.length + header.length];
         System.arraycopy(header, 0, packet_message, 0, header.length);
         System.arraycopy(message, 0, packet_message, header.length, message.length);
         return packet_message;
     }
 
-    private String objectHeader(String name, int length) {
+    private String constructHTTPObjectHeader(String name, int length) {
         return "HTTP/1.0 200 Document Follows\r\n" +
                 "Content-Type: text/plain\r\n" +
                 "Content-Length: " + Integer.toString(length) + "\r\n" +
@@ -74,9 +98,9 @@ public class WebServer {
                 name;
     }
 
-    private byte[] packetHeader(int order) {
+    private byte[] constructPacketHeader(int order) {
         byte[] header = new byte[6];
-        header[0] = (m_Parity);
+        header[0] = (Parity);
         header[1] = (byte) (order >> 24);
         header[2] = (byte) ((order << 8) >> 24);
         header[3] = (byte) ((order << 16) >> 24);
@@ -86,15 +110,14 @@ public class WebServer {
     }
 
     private boolean isRequest() {
-        if (m_Message == null) {
+        if (Message == null) {
             return false;
         }
-        String request = new String(m_Message);
+        String request = new String(Message);
         return request.contains("GET");
     }
 
-    private static final byte m_Parity = 'A'; //1010
-    private byte[] m_Message;
-    private UDPServer m_Server;
-    private String m_Root_Directory = "";
+    private static final byte Parity = 'A'; //1010
+    private byte[] Message;
+    private static final int Header_Size = 6;
 }
