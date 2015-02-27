@@ -92,6 +92,14 @@ public class UDPConnection {
         return Send_Size;
     }
 
+    public int getReceivePacketSize() {
+        return Receive_Size;
+    }
+
+    public int getPort() {
+        return Port;
+    }
+
     protected int Port = -1;
     protected int Send_Size = -1;
     protected int Receive_Size = -1;
