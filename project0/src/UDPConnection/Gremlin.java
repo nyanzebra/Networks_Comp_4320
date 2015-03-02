@@ -56,7 +56,7 @@ public class Gremlin {
         for (int i = 0; i <= timesToDamage - 1; i++) {
             // Ensure the same index is not damaged twice.
             do {
-                randomIndex = random.nextInt(256);
+                randomIndex = random.nextInt(data.length);
             } while (randomIndex == prevIndexes[0] || randomIndex == prevIndexes[1] || randomIndex == prevIndexes[2]);
 
             prevIndexes[i] = randomIndex;
