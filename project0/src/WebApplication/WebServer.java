@@ -69,7 +69,7 @@ public class WebServer extends HTTPConnection {
 
     private byte[] constructPacketFooter() {
         byte[] footer = new byte[7];
-        System.arraycopy(constructPacketHeader(0), 0, footer, 0, 6); // this is to meet requirement of null terminated message
+        System.arraycopy(constructPacketHeader(0, 0), 0, footer, 0, 6); // this is to meet requirement of null terminated message
         return footer;
     }
 
@@ -83,7 +83,7 @@ public class WebServer extends HTTPConnection {
     }
 
     private byte[] constructPacketMessage(byte[] message, int order) {
-        byte[] header = constructPacketHeader(order);
+        byte[] header = constructPacketHeader(order, calculateChecksum(message));
         byte[] packet_message = new byte[message.length + header.length];
         System.arraycopy(header, 0, packet_message, 0, header.length);
         System.arraycopy(message, 0, packet_message, header.length, message.length);
@@ -98,14 +98,14 @@ public class WebServer extends HTTPConnection {
                 name;
     }
 
-    private byte[] constructPacketHeader(int order) {
+    private byte[] constructPacketHeader(int order, int checksum) {
         byte[] header = new byte[6];
         header[0] = (Parity);
         header[1] = (byte) (order >> 24);
         header[2] = (byte) ((order << 8) >> 24);
         header[3] = (byte) ((order << 16) >> 24);
         header[4] = (byte) ((order << 24) >> 24);
-        header[5] = (byte) (0); //this can be boolean values for whatever...
+        header[5] = (byte) (checksum);
         return header;
     }
 

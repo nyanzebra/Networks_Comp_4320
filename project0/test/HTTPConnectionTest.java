@@ -6,8 +6,8 @@ import static org.junit.Assert.assertEquals;
 
 public class HTTPConnectionTest {
 
-    HTTPConnection Client;
-    HTTPConnection Server;
+    private HTTPConnection Client;
+    private HTTPConnection Server;
 
     @Before
     public void setUp() throws Exception {

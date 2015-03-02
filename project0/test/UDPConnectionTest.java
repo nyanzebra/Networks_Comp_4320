@@ -7,8 +7,8 @@ import static org.junit.Assert.assertEquals;
 
 public class UDPConnectionTest {
 
-    UDPConnection Client;
-    UDPConnection Server;
+    private UDPConnection Client;
+    private UDPConnection Server;
 
     @Before
     public void setUp() throws Exception {
