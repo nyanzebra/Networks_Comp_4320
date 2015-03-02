@@ -7,18 +7,29 @@ import java.util.Random;
  */
 public class Gremlin {
 
-    public static byte[] corruptPacket(DatagramPacket packet, double damageProbability) {
+    private static double damageProbability = 0;
+
+    public static byte[] corruptPacket(DatagramPacket packet) {
         // Get data from packet
         byte[] data = packet.getData();
 
         // Generate number between 0 and 1
-        if (Math.random() <= damageProbability) {
+        double randomNum = Math.random();
+        if (randomNum < damageProbability) {
             // If random() is in probability range, damage packet.
-            System.out.println("Packet selected to be damaged");
+            System.out.println("Packet selected to be damaged. (Probability: " + damageProbability + ")");
             return corruptBytes(data);
         }
 
         return data;
+    }
+
+    public static double getDamageProbability() {
+        return damageProbability;
+    }
+
+    public static void setDamageProbability(double newProbability) {
+        damageProbability = newProbability;
     }
 
     private static byte[] corruptBytes(byte[] data) {
@@ -51,9 +62,7 @@ public class Gremlin {
             prevIndexes[i] = randomIndex;
 
             // Fill data at selected index with damaged byte
-            System.out.println("Clean data byte:" + data[randomIndex]);
             data[randomIndex] = generateRandomByte();
-            System.out.println("Corrupted data byte:" + data[randomIndex]);
         }
         return data;
     }
@@ -62,4 +71,5 @@ public class Gremlin {
         Random randomNum = new Random();
         return (byte)randomNum.nextInt();
     }
+
 }

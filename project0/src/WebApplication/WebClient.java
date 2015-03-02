@@ -48,9 +48,9 @@ public class WebClient extends HTTPConnection {
             if (parity != 'A') {
                 throw new WebException("ERROR:  packet has been corrupted");
             }
-            if (packet[5] != calculateChecksum(Arrays.copyOfRange(packet,5,packet.length))) {
-                throw new WebException("ERROR:  packet has been corrupted");
-            }
+            //if (packet[6] != calculateChecksum(Arrays.copyOfRange(packet,5,packet.length))) {
+            //    throw new WebException("ERROR:  packet has been corrupted");
+            //}
 
             byte[] data = Arrays.copyOfRange(packet, 6, packet.length);
             if (data.length > Data.length) {
