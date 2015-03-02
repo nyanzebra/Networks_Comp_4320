@@ -40,10 +40,9 @@ public class Gremlin {
         // Damage the packet at a random index in the data
         Random random = new Random();
         int randomIndex;
-        int j = -1, k = -1 , l = -1;
         int[] prevIndexes = {-1, -1, -1};
 
-        for (int i = 1; i <= timesToDamage; i++) {
+        for (int i = 0; i <= timesToDamage - 1; i++) {
             // Ensure the same index is not damaged twice.
             do {
                 randomIndex = random.nextInt(256);

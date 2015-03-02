@@ -3,6 +3,7 @@ package WebApplication;
 
 import UDPConnection.Exception.UDPException;
 import UDPConnection.UDPClient;
+import WebApplication.Exception.WebException;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -23,7 +24,7 @@ public class WebClient extends HTTPConnection {
         }
     }
 
-    public void request(String command, String file) throws UDPException, IOException {
+    public void request(String command, String file) throws UDPException, IOException, WebException {
         if (Objects.equals(command.toLowerCase(), "get")) {
             String request = "GET " + file + " HTTP/1.0";
             UDP_Connection.send(request.getBytes());
@@ -39,13 +40,16 @@ public class WebClient extends HTTPConnection {
         System.out.println(s);
     }
 
-    private void constructFile() throws UDPException, IOException {
+    private void constructFile() throws UDPException, IOException, WebException {
         byte[] packet = UDP_Connection.receive();
         do {
             int order = orderOfPacketInMessage(Arrays.copyOfRange(packet, 1, 5));
             byte parity = packet[0];
             if (parity != 'A') {
-                System.out.println("Corrupted!");
+                throw new WebException("ERROR:  packet has been corrupted");
+            }
+            if (packet[5] != calculateChecksum(Arrays.copyOfRange(packet,5,packet.length))) {
+                throw new WebException("ERROR:  packet has been corrupted");
             }
 
             byte[] data = Arrays.copyOfRange(packet, 6, packet.length);

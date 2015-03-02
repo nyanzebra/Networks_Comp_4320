@@ -33,6 +33,14 @@ public class HTTPConnection {
         return Root_Directory;
     }
 
+    protected byte calculateChecksum(byte[] data) {
+        byte sum = 0;
+        for (byte b : data) {
+            sum += b;
+        }
+        return sum;
+    }
+
     protected UDPConnection UDP_Connection;
     protected String Root_Directory = "";
 }

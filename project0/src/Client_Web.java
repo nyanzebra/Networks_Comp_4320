@@ -1,4 +1,5 @@
 import UDPConnection.Exception.UDPException;
+import WebApplication.Exception.WebException;
 import WebApplication.WebClient;
 
 import java.io.IOException;
@@ -20,7 +21,7 @@ public class Client_Web {
 
         try {
             wc.request("Get", "html0.html");
-        } catch (UDPException | IOException e) {
+        } catch (UDPException | IOException | WebException e) {
             e.printStackTrace();
         }
         wc.printFile();
