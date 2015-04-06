@@ -19,7 +19,9 @@ public class WebClient extends HTTPConnection {
     public WebClient(String ip) {
         try {
             UDP_Connection = new UDPClient(InetAddress.getByName(ip));
-        } catch (UDPException | UnknownHostException e) {
+        } catch (UDPException e) {
+            e.printStackTrace();
+        } catch (UnknownHostException e) {
             e.printStackTrace();
         }
     }
