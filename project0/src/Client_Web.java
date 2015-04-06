@@ -39,7 +39,11 @@ public class Client_Web {
 
         try {
             wc.request("Get", "html0.html");
-        } catch (UDPException | IOException | WebException e) {
+        } catch (UDPException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (WebException e) {
             e.printStackTrace();
         }
         wc.printFile();

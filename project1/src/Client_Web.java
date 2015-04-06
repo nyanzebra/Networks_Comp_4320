@@ -1,16 +1,16 @@
 import UDPConnection.Exception.UDPException;
 import UDPConnection.Gremlin;
 import WebApplication.Exception.WebException;
-import WebApplication.WebServer;
+import WebApplication.WebClient;
 
 import java.io.IOException;
 /**
  * @author Robert
  * @date 12-Feb-15.
  */
-public class Server_Web {
+public class Client_Web {
     public static void main(String[] args) {
-        WebServer ws = new WebServer(9876);
+        WebClient wc = new WebClient("localhost");
 
         // Get Gremlin probability runtime argument.
         // If no argument is given, probability defaults to 0.
@@ -30,16 +30,16 @@ public class Server_Web {
         }
 
         try {
-            ws.setSendSize(256);
-            ws.setReceiveSize(256);
+            wc.setPort(9876);
+            wc.setSendSize(256);
+            wc.setReceiveSize(256);
         } catch (UDPException e) {
             e.printStackTrace();
         }
 
-        ws.setRootDirectory("/Users/jonathanhart/Developer/Networks_Comp_4320/project0/src/");
-        
         try {
-            ws.listen();
+            wc.request("Get", "html0.html");
+            wc.printFile();
         } catch (UDPException e) {
             e.printStackTrace();
         } catch (IOException e) {
