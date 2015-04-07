@@ -52,6 +52,11 @@ public class PacketBuffer {
         return new Packet (Connection.receive(), Connection);
     }
 
+    public Pair<Integer,Integer> receiveACK() throws UDPException {
+        byte[] packet = new Packet(Connection.receive(),Connection).getHeader();
+        return new Pair<Integer, Integer>((int) packet[0], (int) packet[5]);
+    }
+
     public void update(Packet packet) {
         Packets.get(packet.getSequenceNumber()).First = packet;
     }

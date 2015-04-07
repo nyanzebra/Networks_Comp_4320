@@ -38,7 +38,7 @@ public class Client_Web {
         }
 
         try {
-            wc.request("Get", "html0.html");
+            wc.request("Get", "testpage.html");
             wc.printFile();
         } catch (UDPException e) {
             e.printStackTrace();

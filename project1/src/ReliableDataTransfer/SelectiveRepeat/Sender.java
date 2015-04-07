@@ -1,5 +1,6 @@
 package ReliableDataTransfer.SelectiveRepeat;
 
+import GenericWrappers.Pair;
 import ReliableDataTransfer.Packet;
 import ReliableDataTransfer.PacketBuffer;
 import ReliableDataTransfer.SegmentationAndReassembly.SegmentAndReassemble;
@@ -41,12 +42,11 @@ public class Sender {
 
     private void checkPacketsInWindow() throws UDPException {
         for (int i = 0; i < Window_Size && i < Packet_Buffer.size() - 1; ++i) {
-            Packet packet = Packet_Buffer.receivePacket();
+            Pair<Integer, Integer> ack = Packet_Buffer.receiveACK();
 
-            int sequence = packet.getSequenceNumber() % Sequence_Modulus;
-            HTTPConnection.AcknowledgementCode code = packet.getAcknowledgementCode();
+            int sequence = ack.Second % Sequence_Modulus;
 
-            updatePacketInWindow(sequence, code);
+            updatePacketInWindow(sequence, HTTPConnection.AcknowledgementCode.values()[ack.First]);
         }
     }
 
@@ -54,13 +54,18 @@ public class Sender {
         for (int i = Window_Position; i < Window_Size && i < Packet_Buffer.size() - 1; ++i) {
             if (sequence == Packet_Buffer.get(i).getSequenceNumber() % Sequence_Modulus) {
                 Packet_Buffer.get(i).updateAcknowledgementCode(code);
+                break;
             }
         }
     }
 
     private void updateWindow() throws UDPException {
+        System.out.println("Update window called.");
+        System.out.println("Window Position: " + Window_Position);
+        System.out.println("ACK Code: " + Packet_Buffer.get(Window_Position).getAcknowledgementCode());
         while (Packet_Buffer.get(Window_Position).getAcknowledgementCode() == HTTPConnection.AcknowledgementCode.Acknowledged) {
             ++Window_Position;
+            System.out.println("ACK Received. Window Pos:" + Window_Position );
 
             if (Window_Position == Packet_Buffer.size()) {
                 break;

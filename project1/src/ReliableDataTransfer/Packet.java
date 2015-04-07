@@ -36,6 +36,10 @@ public class Packet {
         }
     }
 
+    public byte[] getHeader() {
+        return Header;
+    }
+
     public boolean isLastPacket() {
         return Packet[6] == 0;
     }
