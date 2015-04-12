@@ -41,7 +41,7 @@ public class Receiver {
     }
 
     private void sendResponse() throws UDPException {
-        System.out.println("ACK Sent");
+        System.out.println("ACK Sent:" + (Packet_Buffer.size() - 1));
         Packet_Buffer.sendACKForLastReceived();
     }
 

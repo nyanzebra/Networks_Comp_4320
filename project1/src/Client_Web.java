@@ -31,14 +31,14 @@ public class Client_Web {
 
         try {
             wc.setPort(9876);
-            wc.setSendSize(256);
-            wc.setReceiveSize(256);
+            wc.setSendSize(512);
+            wc.setReceiveSize(512);
         } catch (UDPException e) {
             e.printStackTrace();
         }
 
         try {
-            wc.request("Get", "testpage.html");
+            wc.request("Get", "testfile.php");
             wc.printFile();
         } catch (UDPException e) {
             e.printStackTrace();

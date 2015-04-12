@@ -14,6 +14,8 @@ public class ErrorDetection {
     }
 
     public static boolean isCorrupted(byte[] data, int checksum) {
-        return calculateChecksum(data) != checksum;
+        int calculated_checksum = calculateChecksum(data);
+
+        return ((calculated_checksum != checksum) && (calculated_checksum != 0));
     }
 }
