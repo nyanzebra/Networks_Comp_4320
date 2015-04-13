@@ -11,7 +11,7 @@ public class Server_Web {
     public static void main(String[] args) {
         WebServer ws = new WebServer(9876);
 
-        ws.setRootDirectory("C:/Users/Robert/Documents/GitHub/Networks_Comp_4320/project1/src/");
+        ws.setRootDirectory("/Users/jonathanhart/Developer/Networks_Comp_4320/project1/src/");
 
         try {
             ws.setSendSize(512);

@@ -11,6 +11,7 @@ import java.util.Random;
 public class Gremlin {
 
     private static double damageProbability = 0;
+    private static double dropProbability = 0;
 
     public static byte[] corruptPacket(DatagramPacket packet) {
         // Get data from packet
@@ -20,15 +21,29 @@ public class Gremlin {
         double randomNum = Math.random();
         if (randomNum < damageProbability) {
             // If random() is in probability range, damage packet.
-            System.out.println("Packet selected to be damaged. (Probability: " + damageProbability + ")");
+            System.out.println("Gremlin:    Packet selected to be damaged. (Probability: " + damageProbability + ")");
             return corruptBytes(data);
         }
 
         return data;
     }
 
-    public static void setDamageProbability(double newProbability) {
-        damageProbability = newProbability;
+    public static boolean dropPacket() {
+        // Generate number between 0 and 1
+        double randomNum = Math.random();
+        if (randomNum < dropProbability) {
+            // If random() is in probability range, damage packet.
+            System.out.println("Gremlin:    Packet selected to be dropped. (Probability: " + dropProbability + ")");
+            //return fillBytes(data);
+            return true;
+        }
+
+        return false;
+    }
+
+    public static void setDamageProbability(double newProbability) { damageProbability = newProbability;}
+    public static void setDropProbability(double newProbability) {
+        dropProbability = newProbability;
     }
 
     private static byte[] corruptBytes(byte[] data) {
@@ -47,7 +62,7 @@ public class Gremlin {
 
         Packet packet = new Packet(data);
 
-        System.out.println("Packet " + packet.getSequenceNumber() + ": " + " damaged " + timesToDamage + " time(s)");
+        System.out.println("Gremlin:    Packet " + packet.getSequenceNumber() + ": " + " damaged " + timesToDamage + " time(s)");
 
         // Damage the packet at a random index in the data
         Random random = new Random();
@@ -66,6 +81,11 @@ public class Gremlin {
             packet.getData()[randomIndex] = generateRandomByte();
         }
         return packet.toBytes();
+    }
+
+    private static byte[] fillBytes(byte[] data) {
+        byte [] ret = new byte[data.length];
+        return ret;
     }
 
     private static byte generateRandomByte() {

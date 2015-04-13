@@ -1,3 +1,4 @@
+
 import UDPConnection.Exception.UDPException;
 import UDPConnection.UDPClient;
 
@@ -18,7 +19,8 @@ public class Client {
 		String s = br.readLine();
         udpc.setPort(9876);
         udpc.send(s.getBytes());
-        byte[] data = udpc.receive();
+        byte[] data = new byte[0];
+        data = udpc.receive();
         String out = new String(data).replaceAll("\0", "");
         System.out.println(out);
         udpc.close();

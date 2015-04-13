@@ -14,7 +14,7 @@ public class Server {
 		udps.setSendPacketSize(256);
 		udps.setReceivePacketSize(256);
 		String response = "Success!";
-        String shutdown = "Confirmed:   server is shutdown";
+        String shutdown = "Confirmed:   Server is shutdown";
 		while (true) {
 			//we have data to look at
 			byte[] data = udps.receive();

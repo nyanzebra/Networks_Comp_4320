@@ -14,18 +14,27 @@ public class Client_Web {
 
         // Get Gremlin probability runtime argument.
         // If no argument is given, probability defaults to 0.
-        double gremlinProbability;
-        Gremlin.setDamageProbability(1);
-        if (args.length > 0) {
+        double damageProbability;
+        double dropProbability;
+        Gremlin.setDamageProbability(0.3);
+        Gremlin.setDropProbability(0.9);
+
+        if (args.length > 1) {
             try {
-                gremlinProbability = Double.parseDouble(args[0]);
-                if (gremlinProbability > 1.0) {
+                damageProbability = Double.parseDouble(args[0]);
+                if (damageProbability > 1.0) {
                     System.err.println("Argument" + args[0] + " must be less than or equal to 1.0.");
                     System.exit(1);
                 }
-                Gremlin.setDamageProbability(gremlinProbability);
+                dropProbability = Double.parseDouble(args[1]);
+                if (dropProbability > 1.0) {
+                    System.err.println("Argument" + args[1] + " must be less than or equal to 1.0.");
+                    System.exit(1);
+                }
+                Gremlin.setDamageProbability(damageProbability);
+                Gremlin.setDropProbability(dropProbability);
             } catch (NumberFormatException e) {
-                System.err.println("Argument" + args[0] + " must be a double.");
+                System.err.println("Arguments must be a double.");
                 System.exit(1);
             }
         }

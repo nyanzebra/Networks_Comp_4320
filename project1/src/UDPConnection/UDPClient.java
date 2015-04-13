@@ -24,6 +24,7 @@ public class UDPClient extends UDPConnection {
 
     @Override
     public byte[] receive() throws UDPException {
+
         if (Receive_Size == -1) {
             throw new UDPException("UDPException:	packet size must be defined");
         }
@@ -37,11 +38,11 @@ public class UDPClient extends UDPConnection {
             Socket.receive(packet);
 
             // Damage packet randomly using Gremlin
-
             packet.setData(Gremlin.corruptPacket(packet));
 
+            System.out.println("Confirmed:  Received Packet");
 
-            System.out.println("Confirmed:  received packet");
+
         } catch (IOException e) {
             e.printStackTrace();
         }

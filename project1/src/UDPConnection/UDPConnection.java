@@ -30,7 +30,7 @@ public class UDPConnection {
         try {
             byte[] buffer = Arrays.copyOfRange(data, 0, Send_Size);
             Socket.send(new DatagramPacket(buffer, Send_Size, IP, Port));
-            System.out.println("Confirmed:  sent packet");
+            System.out.println("Confirmed:  Sent Packet");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -56,7 +56,7 @@ public class UDPConnection {
         try {
             Socket.receive(packet);
 
-            System.out.println("Confirmed:  received packet");
+            System.out.println("Confirmed:  Received Packet");
         } catch (IOException e) {
             e.printStackTrace();
         }

@@ -65,11 +65,11 @@ public class Sender {
     }
 
     private void updateWindow() throws UDPException {
-        System.out.println("Update window called.");
-        System.out.println("Window Position: " + Window_Position);
-        System.out.println("ACK Code: " + Packet_Buffer.get(Window_Position).getAcknowledgementCode());
+        System.out.println("Window:     Update window called.");
+        System.out.println("Window:     Position =  " + Window_Position);
+        System.out.println("ACK:        Code = " + Packet_Buffer.get(Window_Position).getAcknowledgementCode());
         while (Packet_Buffer.get(Window_Position).getAcknowledgementCode() == HTTPConnection.AcknowledgementCode.Acknowledged) {
-            System.out.println("ACK Received. Window Pos:" + Window_Position );
+            System.out.println("ACK:        Received. Window Pos = " + Window_Position );
             ++Window_Position;
 
             if (Window_Position == Packet_Buffer.size() - 1) {
