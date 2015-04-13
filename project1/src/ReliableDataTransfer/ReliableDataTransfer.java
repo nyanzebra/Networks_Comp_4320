@@ -42,7 +42,7 @@ public class ReliableDataTransfer {
 
     public byte[] receiveMessage(int file_size) throws UDPException, WebException, IOException {
         Receiver Receive_Side = new Receiver(UDP_Connection);
-        Receive_Side.ReceivePackets();
+        Receive_Side.receivePackets();
         PacketBuffer message_buffer = Receive_Side.getPacketBuffer();
         return SegmentAndReassemble.reassemble(message_buffer.toArrayList(), file_size);
     }

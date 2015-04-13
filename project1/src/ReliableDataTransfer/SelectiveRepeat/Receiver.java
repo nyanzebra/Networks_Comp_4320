@@ -13,42 +13,72 @@ import WebApplication.HTTPConnection;
 public class Receiver {
 
     public Receiver(UDPConnection udp_connection) {
-        Packet_Buffer = new PacketBuffer(udp_connection);
+        Packet_Buffer = new PacketBuffer();
+        Connection = udp_connection;
     }
 
-    public void ReceivePackets() throws UDPException {
+    public void receivePackets() throws UDPException {
         while (!Should_End_Reception) {
-            receivePacket();
+            sendAcknowledgement();
         }
     }
 
-    private void receivePacket() throws UDPException {
-        Packet packet = Packet_Buffer.receivePacket();
-        if (packet.getAcknowledgementCode() != HTTPConnection.AcknowledgementCode.None) {
+    public Packet receivePacket() throws UDPException {
+        return new Packet (Connection.receive());
+    }
+
+    private void sendAcknowledgement() throws UDPException {
+        Packet packet = receivePacket();
+
+        System.out.println("Code for received packet #" + packet.getSequenceNumber() + ": " + packet.getAcknowledgementCode());
+
+        if (packet.getAcknowledgementCode() == HTTPConnection.AcknowledgementCode.Not_Acknowledged) {
+            sendResponse(packet);
+        } else {
             if (packet.isLastPacket()) {
                 Should_End_Reception = true;
             }
-            if (Packet_Buffer.hasPacket(packet.getSequenceNumber())) {
-                if (Packet_Buffer.get(packet.getSequenceNumber()).getAcknowledgementCode() == HTTPConnection.AcknowledgementCode.Not_Acknowledged) {
+            int sequence_number = packet.getSequenceNumber();
+            if (Packet_Buffer.hasPacket(sequence_number)) {
+                if (Packet_Buffer.get(sequence_number).getAcknowledgementCode() == HTTPConnection.AcknowledgementCode.Not_Acknowledged) {
                     Packet_Buffer.update(packet);
-                    sendResponse();
+                    sendResponse(packet);
                 }
             } else {
                 Packet_Buffer.add(packet);
-                sendResponse();
+                sendResponse(packet);
             }
         }
     }
 
-    private void sendResponse() throws UDPException {
-        System.out.println("ACK Sent:" + (Packet_Buffer.size() - 1));
-        Packet_Buffer.sendACKForLastReceived();
+    private void sendResponse(Packet packet) throws UDPException {
+        System.out.println("ACK Sent:" + packet.getSequenceNumber());
+        sendAcknowledgement(packet);
+    }
+
+    private byte[] constructAcknowledgement(HTTPConnection.AcknowledgementCode code, int sequence_number) {
+        byte[] ack = new byte[6];
+
+        ack[0] = (byte) code.ordinal();
+        ack[1] = 0;
+        ack[2] = 1; // make sure is from client
+        ack[3] = 0;
+        ack[4] = 0;
+        ack[5] = (byte) sequence_number; //checksum will be sequence number in ACK
+
+        return ack;
     }
 
     public PacketBuffer getPacketBuffer() {
         return Packet_Buffer;
     }
 
+    public void sendAcknowledgement(Packet packet) throws UDPException {
+        int code = packet.getHeader()[0];
+        Connection.send(constructAcknowledgement(HTTPConnection.AcknowledgementCode.values()[code], packet.getSequenceNumber()));
+    }
+
     private boolean Should_End_Reception = false;
-    private volatile PacketBuffer Packet_Buffer;
+    private UDPConnection Connection = null;
+    private PacketBuffer Packet_Buffer;
 }

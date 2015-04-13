@@ -12,11 +12,20 @@ import java.util.ArrayList;
 
 public class Sender {
     public Sender(ArrayList<byte[]> packets, UDPConnection udp_connection, int window_Size, int sequence_Modulus) {
-        Packet_Buffer = new PacketBuffer(udp_connection);
-        Packet_Buffer.addAll(packets, sequence_Modulus);
-        Packet_Buffer.add(new Packet(SegmentAndReassemble.constructPacketFooter(Packet_Buffer.size()), udp_connection));
+        Packet_Buffer = new PacketBuffer();
+        Packet_Buffer.addAll(packets);
+        Connection = udp_connection;
+        Packet_Buffer.add(new Packet(SegmentAndReassemble.constructPacketFooter(Packet_Buffer.size())));
         Sequence_Modulus = sequence_Modulus;
         Window_Size = window_Size;
+    }
+
+    public Pair<Integer,Integer> receiveACK() throws UDPException {
+        byte[] header = new Packet(Connection.receive()).getHeader();
+        if (header[2] != 1) {
+            header[0] = 2;
+        }
+        return new Pair<Integer, Integer>((int) header[0], (int) header[5]);
     }
 
     public void sendPackets() {
@@ -26,7 +35,7 @@ public class Sender {
                 checkPacketsInWindow();
                 updateWindow();
             }
-            Packet_Buffer.get(Packet_Buffer.size() - 1).Transmit();
+            transmit(Packet_Buffer.size() - 1);
         } catch (UDPException e) {
             e.printStackTrace();
         }
@@ -35,27 +44,23 @@ public class Sender {
     private void sendPacketsInWindow() throws UDPException {
         for (int i = Window_Position; i < Window_Size + Window_Position && i < Packet_Buffer.size() - 1; ++i) {
             if (Packet_Buffer.get(i).getAcknowledgementCode() != HTTPConnection.AcknowledgementCode.Acknowledged) {
-                Packet_Buffer.get(i).Transmit();
+                transmit(i);
             }
         }
+    }
+
+    private void transmit(int position) throws UDPException {
+        Connection.send(Packet_Buffer.get(position).toBytes());
     }
 
     private void checkPacketsInWindow() throws UDPException {
         for (int i = 0; i < Window_Size && i + Window_Position < Packet_Buffer.size() - 1; ++i) {
-            Pair<Integer, Integer> ack = Packet_Buffer.receiveACK();
+            Pair<Integer, Integer> ack = receiveACK();
 
             int sequence = ack.Second % Sequence_Modulus;
+            HTTPConnection.AcknowledgementCode code = HTTPConnection.AcknowledgementCode.values()[ack.First];
 
-            updatePacketInWindow(sequence, HTTPConnection.AcknowledgementCode.values()[ack.First]);
-        }
-    }
-
-    private void updatePacketInWindow(int sequence, HTTPConnection.AcknowledgementCode code) {
-        for (int i = Window_Position; i < Window_Size + Window_Position && i < Packet_Buffer.size() - 1; ++i) {
-            if (sequence == Packet_Buffer.get(i).getSequenceNumber() % Sequence_Modulus) {
-                Packet_Buffer.get(i).updateAcknowledgementCode(code);
-                break;
-            }
+            Packet_Buffer.get(sequence).updateAcknowledgementCode(code);
         }
     }
 
@@ -80,5 +85,6 @@ public class Sender {
     private int Window_Position = 0;
     private int Window_Size = 0;
     private int Sequence_Modulus = 0;
-    private volatile PacketBuffer Packet_Buffer;
+    private UDPConnection Connection = null;
+    private PacketBuffer Packet_Buffer;
 }

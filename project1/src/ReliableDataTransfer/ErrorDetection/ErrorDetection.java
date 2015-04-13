@@ -5,10 +5,20 @@ package ReliableDataTransfer.ErrorDetection;
  * @date 05-Apr-15.
  */
 public class ErrorDetection {
-    public static byte calculateChecksum(byte[] data) {
+    public static byte calculateChecksum(byte[] data) { // Need better checksum, this one sucks!
         byte sum = 0;
-        for (byte b : data) {
-            sum += b;
+        for (int i = 0; i < data.length; ++i) {
+            if (i % 2 == 0) {
+                sum += data[i];
+            } else if (i % 3 == 0) {
+                if (data[i] != 0) {
+                    sum /= data[i];
+                } else {
+                    sum += data[i];
+                }
+            } else {
+                sum -= data[i];
+            }
         }
         return sum;
     }

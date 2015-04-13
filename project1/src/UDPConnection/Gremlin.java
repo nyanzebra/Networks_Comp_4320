@@ -1,4 +1,7 @@
 package UDPConnection;
+
+import ReliableDataTransfer.Packet;
+
 import java.net.DatagramPacket;
 import java.util.Random;
 
@@ -24,10 +27,6 @@ public class Gremlin {
         return data;
     }
 
-    public static double getDamageProbability() {
-        return damageProbability;
-    }
-
     public static void setDamageProbability(double newProbability) {
         damageProbability = newProbability;
     }
@@ -46,7 +45,9 @@ public class Gremlin {
             timesToDamage = 3;
         }
 
-        System.out.println("Packet damaged " + timesToDamage + " time(s)");
+        Packet packet = new Packet(data);
+
+        System.out.println("Packet " + packet.getSequenceNumber() + ": " + " damaged " + timesToDamage + " time(s)");
 
         // Damage the packet at a random index in the data
         Random random = new Random();
@@ -56,15 +57,15 @@ public class Gremlin {
         for (int i = 0; i <= timesToDamage - 1; i++) {
             // Ensure the same index is not damaged twice.
             do {
-                randomIndex = random.nextInt(data.length);
+                randomIndex = random.nextInt(packet.getData().length);
             } while (randomIndex == prevIndexes[0] || randomIndex == prevIndexes[1] || randomIndex == prevIndexes[2]);
 
             prevIndexes[i] = randomIndex;
 
             // Fill data at selected index with damaged byte
-            data[randomIndex] = generateRandomByte();
+            packet.getData()[randomIndex] = generateRandomByte();
         }
-        return data;
+        return packet.toBytes();
     }
 
     private static byte generateRandomByte() {

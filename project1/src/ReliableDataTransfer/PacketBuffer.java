@@ -1,17 +1,11 @@
 package ReliableDataTransfer;
 
 import GenericWrappers.Pair;
-import UDPConnection.Exception.UDPException;
-import UDPConnection.UDPConnection;
 import WebApplication.HTTPConnection;
 
 import java.util.ArrayList;
 
 public class PacketBuffer {
-    public PacketBuffer(UDPConnection connection) {
-        Connection = connection;
-    }
-
     public Packet get(int position) {
         return Packets.get(position).First;
     }
@@ -27,34 +21,15 @@ public class PacketBuffer {
     }
 
     public void add(Packet packet) {
-        int sequence_number = 0;
-
-        if (Last_Received_Packet != null) {
-            sequence_number = Last_Received_Packet.getSequenceNumber() + 1;
-        }
-
-        Packets.add(new Pair<Packet, Integer>(packet, sequence_number));
-
-        Last_Received_Packet = packet;
+        Packets.add(new Pair<Packet, Integer>(packet, packet.getSequenceNumber()));
     }
 
     private void add(byte[] packet, int sequence_number) {
-        Packets.add(new Pair<Packet, Integer>(new Packet(packet, Connection), sequence_number));
-        Packets.get(Packets.size() - 1).First.updateAcknowledgementCode(HTTPConnection.AcknowledgementCode.None);
-        Last_Received_Packet = Packets.get(Packets.size() - 1).First;
+        Packets.add(new Pair<Packet, Integer>(new Packet(packet), sequence_number));
     }
 
     public boolean hasPacket(int sequence_number) {
         return sequence_number < Packets.size();
-    }
-
-    public Packet receivePacket() throws UDPException {
-        return new Packet (Connection.receive(), Connection);
-    }
-
-    public Pair<Integer,Integer> receiveACK() throws UDPException {
-        byte[] packet = new Packet(Connection.receive(),Connection).getHeader();
-        return new Pair<Integer, Integer>((int) packet[0], (int) packet[5]);
     }
 
     public void update(Packet packet) {
@@ -65,21 +40,16 @@ public class PacketBuffer {
         return Packets.size();
     }
 
-    public void sendACKForLastReceived() throws UDPException {
-        Last_Received_Packet.Acknowledgement();
-    }
-
     public boolean isEmpty() {
         return Packets.isEmpty();
     }
 
-    public void addAll(ArrayList<byte[]> packets, int sequence_modulus) {
+    public void addAll(ArrayList<byte[]> packets) {
         for (int i = 0; i < packets.size(); ++i) {
-            add(packets.get(i), i % sequence_modulus);
+            add(packets.get(i), i);
+            Packets.get(Packets.size() - 1).First.updateAcknowledgementCode(HTTPConnection.AcknowledgementCode.None);
         }
     }
 
-    private UDPConnection Connection;
-    private Packet Last_Received_Packet = null;
     private ArrayList<Pair<Packet,Integer>> Packets = new ArrayList<Pair<Packet, Integer>>();
 }

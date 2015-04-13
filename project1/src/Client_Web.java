@@ -15,6 +15,7 @@ public class Client_Web {
         // Get Gremlin probability runtime argument.
         // If no argument is given, probability defaults to 0.
         double gremlinProbability;
+        Gremlin.setDamageProbability(1);
         if (args.length > 0) {
             try {
                 gremlinProbability = Double.parseDouble(args[0]);

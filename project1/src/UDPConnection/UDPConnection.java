@@ -56,9 +56,6 @@ public class UDPConnection {
         try {
             Socket.receive(packet);
 
-            // Damage packet randomly using Gremlin
-            packet.setData(Gremlin.corruptPacket(packet));
-
             System.out.println("Confirmed:  received packet");
         } catch (IOException e) {
             e.printStackTrace();
