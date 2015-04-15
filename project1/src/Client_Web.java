@@ -16,8 +16,6 @@ public class Client_Web {
         // If no argument is given, probability defaults to 0.
         double damageProbability;
         double dropProbability;
-        Gremlin.setDamageProbability(0.3);
-        Gremlin.setDropProbability(0.9);
 
         if (args.length > 1) {
             try {
